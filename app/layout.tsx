@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
 
 export const metadata: Metadata = {
   title: "Trip Tribe",
-  description: "Group travel planning",
+  description: "Plan trips with your crew — vote, decide, go.",
 };
 
 export default function RootLayout({
@@ -13,16 +19,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen antialiased">
-        <header className="border-b border-neutral-200 bg-white px-4 py-3">
-          <Link
-            href="/"
-            className="text-sm font-medium text-neutral-900 hover:text-neutral-600"
-          >
-            Home
-          </Link>
-        </header>
+    <html lang="en" className={jakarta.variable}>
+      <body className={`${jakarta.className} min-h-screen antialiased`}>
+        <SiteHeader />
         {children}
       </body>
     </html>
