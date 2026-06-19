@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { buttonClassName } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ToastBanner } from "@/components/ui/ToastBanner";
+import { AnimatedToast } from "@/components/ui/AnimatedToast";
 import {
   addDateOption,
   addOption,
@@ -71,7 +71,7 @@ export default async function TileDetailPage({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
-      <ToastBanner toastKey={toast} />
+      <AnimatedToast toastKey={toast} />
 
       <PageHeader
         breadcrumbs={
@@ -81,8 +81,10 @@ export default async function TileDetailPage({
             </Link>
             <span className="mx-1.5 text-stone-300">/</span>
             <Link href={`/trip/${tripId}`} className="hover:text-ocean-700">
-              {trip.name}
+              Trip board
             </Link>
+            <span className="mx-1.5 text-stone-300">·</span>
+            <span className="text-stone-600">{trip.name}</span>
           </>
         }
         title={
@@ -120,7 +122,9 @@ export default async function TileDetailPage({
             </div>
             <span
               aria-hidden
-              className="shrink-0 text-3xl leading-none sm:text-4xl"
+              className={`shrink-0 text-3xl leading-none sm:text-4xl ${
+                toast === "locked" ? "animate-celebrate-pop" : ""
+              }`}
             >
               🎉
             </span>

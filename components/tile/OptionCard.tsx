@@ -22,7 +22,7 @@ export function VoteButtons({
   const downActive = myVote?.value === -1;
 
   const base =
-    "flex h-11 min-w-11 items-center justify-center rounded-xl border text-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2";
+    "flex h-11 min-w-11 items-center justify-center rounded-xl border text-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 active:scale-95";
   const idle = "border-stone-200 bg-white hover:bg-stone-50";
   const upOn = "border-emerald-500 bg-emerald-50 text-emerald-800";
   const downOn = "border-rose-400 bg-rose-50 text-rose-800";
@@ -89,11 +89,11 @@ export function OptionCard({
 
   return (
     <Card
-      className={
+      className={`transition-shadow duration-200 hover:shadow-card-hover ${
         isLeading
           ? "ring-2 ring-ocean-300 ring-offset-2 ring-offset-stone-50"
-          : undefined
-      }
+          : ""
+      }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -104,8 +104,11 @@ export function OptionCard({
             ) : null}
           </div>
           {creator ? (
-            <p className="mt-1 text-xs text-stone-500">
-              Added by {creator.name}
+            <p className="mt-1 flex items-center gap-2 text-xs text-stone-500">
+              <Avatar name={creator.name} size="sm" />
+              <span>
+                Added by <span className="font-medium text-stone-600">{creator.name}</span>
+              </span>
             </p>
           ) : null}
           {option.description ? (
@@ -156,7 +159,19 @@ export function OptionCard({
         {votes.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No votes yet — be first!</p>
         ) : (
-          <ul className="mt-2 space-y-2">
+          <>
+            <div className="mt-2 flex flex-wrap items-center gap-1">
+              {votes.map((v) => {
+                const u = getUser(v.userId);
+                if (!u) return null;
+                return (
+                  <span key={v.id} title={`${u.name} (${v.value > 0 ? "👍" : "👎"})`}>
+                    <Avatar name={u.name} size="sm" />
+                  </span>
+                );
+              })}
+            </div>
+            <ul className="mt-3 space-y-2">
             {votes.map((v) => {
               const u = getUser(v.userId);
               return (
@@ -180,6 +195,7 @@ export function OptionCard({
               );
             })}
           </ul>
+          </>
         )}
       </div>
     </Card>

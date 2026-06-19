@@ -1,4 +1,8 @@
 import { PageHeader } from "@/components/layout/PageHeader";
+import { InviteLinkCard } from "@/components/trip/InviteLinkCard";
+import { JoinTripBanner } from "@/components/trip/JoinTripBanner";
+import { TripDecisionsSummary } from "@/components/trip/TripDecisionsSummary";
+import { AnimatedToast } from "@/components/ui/AnimatedToast";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -10,12 +14,14 @@ import {
   type Tile,
 } from "@/lib/store";
 import { getTileIcon } from "@/lib/tile-icons";
+import { buildTripInviteUrl } from "@/lib/trip-invite";
 import {
   tileCardClasses,
   tileStatusBadgeClasses,
   tileStatusHint,
   tileStatusLabel,
 } from "@/lib/tile-status-ui";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -23,6 +29,7 @@ export const dynamic = "force-dynamic";
 
 type TripPageProps = {
   params: Promise<{ tripId: string }>;
+  searchParams: Promise<{ toast?: string; invite?: string }>;
 };
 
 function tileSubtitle(tile: Tile): string {
@@ -43,16 +50,24 @@ function tileSubtitle(tile: Tile): string {
   return countLabel;
 }
 
-export default async function TripPage({ params }: TripPageProps) {
+export default async function TripPage({ params, searchParams }: TripPageProps) {
   const { tripId } = await params;
+  const { toast, invite } = await searchParams;
   const trip = getTripTribe(tripId);
   if (!trip) {
     notFound();
   }
 
+  const headersList = await headers();
+  const host = headersList.get("host") ?? "localhost:3000";
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const inviteUrl = buildTripInviteUrl(tripId, `${protocol}://${host}`);
+  const showJoinBanner = invite === "1";
+
   const tiles = ensureDefaultTiles(tripId);
   const lockedCount = tiles.filter((t) => t.status === "locked").length;
   const progressPct = Math.round((lockedCount / tiles.length) * 100);
+  const allDecided = lockedCount === tiles.length && tiles.length > 0;
 
   const members = trip.memberUserIds
     .map((id) => getUser(id))
@@ -60,14 +75,21 @@ export default async function TripPage({ params }: TripPageProps) {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+      <AnimatedToast toastKey={toast} />
+
       <PageHeader
         breadcrumbs={
           <Link href="/" className="hover:text-ocean-700">
             Home
           </Link>
         }
+        eyebrow="Trip board"
         title={trip.name}
-        description="Tap a tile to add ideas, vote with your group, and lock the final choice."
+        description={
+          allDecided
+            ? "You're all set! Every decision is locked — review your group's final plan below."
+            : "Welcome to your trip board! Collaborate with friends to plan the trip of a lifetime — add ideas, vote on each tile, and lock your final choices."
+        }
         actions={
           members.length > 0 ? (
             <div className="flex items-center gap-1">
@@ -84,7 +106,13 @@ export default async function TripPage({ params }: TripPageProps) {
         }
       />
 
-      <div className="mb-8 rounded-2xl border border-stone-200/80 bg-white p-4 shadow-card sm:p-5">
+      {showJoinBanner ? <JoinTripBanner tripId={tripId} /> : null}
+
+      <div className="mb-8">
+        <InviteLinkCard inviteUrl={inviteUrl} />
+      </div>
+
+      <div className="mb-8 rounded-2xl border border-stone-200/80 bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-stone-900">Trip progress</p>
@@ -105,22 +133,24 @@ export default async function TripPage({ params }: TripPageProps) {
           aria-label="Decisions locked"
         >
           <div
-            className="h-full rounded-full bg-gradient-to-r from-ocean-500 to-ocean-600 transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-ocean-500 to-ocean-600 transition-all duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
+
+      <TripDecisionsSummary tiles={tiles} />
 
       <ul className="grid gap-4 sm:grid-cols-2">
         {tiles.map((tile) => (
           <li key={tile.id}>
             <Link
               href={`/trip/${tripId}/tile/${tile.id}`}
-              className={`group block rounded-2xl p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5 ${tileCardClasses(tile.status)}`}
+              className={`group block rounded-2xl p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover sm:p-5 ${tileCardClasses(tile.status)}`}
             >
               <div className="flex items-start gap-3">
                 <span
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/80 text-xl shadow-sm ring-1 ring-stone-200/60"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/80 text-xl shadow-sm ring-1 ring-stone-200/60 transition-transform duration-200 group-hover:scale-105"
                   aria-hidden
                 >
                   {getTileIcon(tile.label)}

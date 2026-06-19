@@ -9,6 +9,7 @@ export type TripTribe = {
   memberUserIds: string[];
   captainUserId?: string;
   tileIds: string[];
+  createdAt: string;
 };
 
 export type TileStatus = "pending" | "voting" | "locked";
@@ -91,9 +92,47 @@ export function createTripTribe(input: {
     name: input.name,
     memberUserIds: [creator.id],
     tileIds: [],
+    createdAt: new Date().toISOString(),
   };
   tripTribes[trip.id] = trip;
   return { trip, creator };
+}
+
+export function listTripTribes(): TripTribe[] {
+  return Object.values(mem().tripTribes).sort((a, b) => {
+    const aTime = a.createdAt ?? "";
+    const bTime = b.createdAt ?? "";
+    return bTime.localeCompare(aTime);
+  });
+}
+
+export type TripSummary = {
+  trip: TripTribe;
+  lockedCount: number;
+  totalTiles: number;
+};
+
+/** Trips with lock progress (ensures default tiles exist for counts). */
+export function listTripSummaries(): TripSummary[] {
+  return listTripTribes().map((trip) => {
+    const tiles = ensureDefaultTiles(trip.id);
+    const lockedCount = tiles.filter((t) => t.status === "locked").length;
+    return { trip, lockedCount, totalTiles: tiles.length };
+  });
+}
+
+/** Adds a new member to the trip (in-memory invite flow). */
+export function joinTripAsMember(input: {
+  tripId: string;
+  memberName: string;
+}): User | undefined {
+  const trip = mem().tripTribes[input.tripId];
+  if (!trip) return undefined;
+  const user = createUser(input.memberName.trim() || "New member");
+  if (!trip.memberUserIds.includes(user.id)) {
+    trip.memberUserIds.push(user.id);
+  }
+  return user;
 }
 
 export function getTripTribe(tripId: string): TripTribe | undefined {
