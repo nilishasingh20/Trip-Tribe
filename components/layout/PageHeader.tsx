@@ -1,5 +1,7 @@
+import type { ReactNode } from "react";
+
 type PageHeaderProps = {
-  title: string;
+  title: ReactNode;
   description?: string;
   breadcrumbs?: React.ReactNode;
   actions?: React.ReactNode;

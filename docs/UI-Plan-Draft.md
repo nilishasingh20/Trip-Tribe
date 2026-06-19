@@ -51,13 +51,14 @@ Future: trip header with members, invite link, activity strip.
 
 ## Phased rollout
 
-### Phase 1 — Foundation ✅ (in progress)
+### Phase 1 — Foundation ✅
 - Design tokens in Tailwind
 - Global layout + header
 - Shared UI components; refactor home + trip cards
 
-### Phase 2 — Trip & tile polish
-- Trip header polish, option cards, thumbs voting UI, toasts
+### Phase 2 — Trip & tile polish ✅ (in progress on develop)
+- Tile detail: option cards, thumbs voting, toasts, empty states
+- Finalize choice flow, leading option badge, member avatars on votes
 
 ### Phase 3 — Collaboration layer
 - Avatars on votes, invite link UI, saved trips on home

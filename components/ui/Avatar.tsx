@@ -1,6 +1,7 @@
 type AvatarProps = {
   name: string;
   className?: string;
+  size?: "sm" | "md";
 };
 
 function initialsFromName(name: string): string {
@@ -10,11 +11,16 @@ function initialsFromName(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function Avatar({ name, className = "" }: AvatarProps) {
+const sizeClasses = {
+  sm: "h-6 w-6 text-[10px]",
+  md: "h-8 w-8 text-xs",
+};
+
+export function Avatar({ name, className = "", size = "md" }: AvatarProps) {
   return (
     <span
       title={name}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-ocean-100 text-xs font-bold text-ocean-800 ring-2 ring-white ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-ocean-100 font-bold text-ocean-800 ring-2 ring-white ${sizeClasses[size]} ${className}`}
     >
       {initialsFromName(name)}
     </span>
